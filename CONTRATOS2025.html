@@ -1,0 +1,3420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plataforma de Control y Seguimiento de Contratos</title>
+  <style>
+    :root {
+      --primary: #2C5364;
+      --secondary: #0F2027;
+      --accent: #F7971E;
+      --success: #43e97b;
+      --danger: #f85032;
+      --info: #56CCF2;
+      --bg: #f8f8fa;
+      --tab-bg: #e0e7ef;
+      --tab-active: #56CCF2;
+      --border: #d1d8e0;
+      --pending: #ffc107;
+      --completed: #43e97b;
+      --white: #fff;
+      --gray: #888;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      margin: 0; padding: 0;
+    }
+    header {
+      background: linear-gradient(to right, var(--secondary), var(--primary));
+      color: var(--white);
+      font-size: 2rem;
+      padding: 20px;
+      text-align: center;
+      letter-spacing: 2px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(44,83,100,0.15);
+    }
+    main {
+      max-width: 1100px;
+      margin: 30px auto;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 0 18px rgba(44,83,100,0.07);
+      padding: 36px 30px 32px 30px;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+      background: var(--tab-bg);
+      border-radius: 8px 8px 0 0;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 14px 28px;
+      cursor: pointer;
+      font-size: 1.08rem;
+      color: var(--gray);
+      background: transparent;
+      border: none;
+      outline: none;
+      border-radius: 8px 8px 0 0;
+      transition: background 0.15s, color 0.15s;
+      margin-right: 2px;
+      font-weight: 600;
+    }
+    .tab.active {
+      color: var(--primary);
+      background: var(--tab-active);
+      box-shadow: 0 -2px 10px rgba(86,204,242,0.08);
+    }
+    section {
+      display: none;
+      min-height: 320px;
+      animation: fadeIn .4s;
+    }
+    section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px);}
+      to   { opacity: 1; transform: none;}
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 7px;
+      display: inline-block;
+      color: var(--primary);
+    }
+    input, select, textarea {
+      display: block;
+      width: 100%;
+      margin-bottom: 18px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      background: #f9fafd;
+      transition: border-color 0.16s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    button, .btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      padding: 10px 22px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background 0.15s, color 0.15s;
+      font-weight: 600;
+    }
+    button:hover, .btn:hover {
+      background: var(--accent);
+      color: var(--secondary);
+    }
+    .btn-secondary {
+      background: var(--info);
+      color: var(--secondary);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: var,--white);
+    }
+    .btn-success {
+      background: var(--success);
+      color: var(--secondary);
+    }
+    .btn-edit {
+      background: #f7971e;
+      color: var(--white);
+      padding: 4px 10px;
+      font-size: 0.98rem;
+      margin:0 2px;
+    }
+    .btn-delete {
+      background: var(--danger);
+      color: var(--white);
+      padding: 4px 10px;
+      font-size: 0.98rem;
+      margin:0 2px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 16px;
+      background: var(--white);
+      box-shadow: 0 0 4px #e0e7ef44;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 10px 8px;
+      min-width: 110px;
+      box-sizing: border-box;
+    }
+    th {
+      background: var(--tab-bg);
+      color: var(--primary);
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+    }
+    td {
+      background: #f9fafd;
+      border-bottom: 1px solid #e0e7ef;
+    }
+    tr:nth-child(even) td {
+      background: #f4f8fb;
+    }
+    .status-badge {
+      border-radius: 4px;
+      font-size: 0.98rem;
+      padding: 2px 11px;
+      display: inline-block;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.14s, color 0.14s;
+    }
+    .status-completed {
+      background: var(--success);
+      color: #186a3b;
+    }
+    .status-pending {
+      background: var(--pending);
+      color: #7a5d00;
+    }
+    .status-incomplete {
+      background: var(--danger);
+      color: var(--white);
+    }
+    .alert {
+      background: var(--danger);
+      color: var(--white);
+      padding: 11px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      box-shadow: 0 0 6px #f8503242;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .alert-success {
+      background: var(--success);
+      color: #0c4133;
+    }
+    .alert-warning {
+      background: var(--pending);
+      color: #7a5d00;
+    }
+    .progress-bar-wrap {
+      background: #e5e9f2;
+      border-radius: 7px;
+      height: 18px;
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-bar {
+      height: 100%;
+      transition: width 0.4s;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      border-radius: 7px 0 0 7px;
+      font-size: 0.98rem;
+      color: var(--secondary);
+      text-align: right;
+      padding-right: 10px;
+      font-weight: 700;
+      line-height: 18px;
+    }
+    .dashboard-chart {
+      width: 100%; max-width: 400px; margin: 18px auto 0 auto; display: block;
+    }
+    .dashboard-analysis {
+      background: #eaf6f7;
+      color: var(--primary);
+      font-size: 1.05rem;
+      margin: 15px auto 16px auto;
+      border-left: 4px solid var(--info);
+      padding: 12px 18px;
+      border-radius: 6px;
+      max-width: 430px;
+      box-shadow: 0 0 8px #56ccf222;
+    }
+    .pdf-modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(44,83,100,0.18);
+      align-items: center;
+      justify-content: center;
+    }
+    .pdf-modal.active { display: flex; }
+    .pdf-modal-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 0;
+      box-shadow: 0 6px 40px rgba(44,83,100,0.35);
+      max-width: 90vw;
+      max-height: 90vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .pdf-modal-content embed {
+      border-radius: 0 0 10px 10px;
+      width: 80vw;
+      height: 70vh;
+      display: block;
+      background: #f4f6fa;
+    }
+    .pdf-modal-header {
+      padding: 10px 18px;
+      background: var(--primary);
+      color: var(--white);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 10px 10px 0 0;
+    }
+    .pdf-modal-close {
+      background: none;
+      border: none;
+      color: var(--white);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .flex-row {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+    .flex-col {
+      flex: 1 0 210px;
+      min-width: 220px;
+    }
+    /* Mejorar la tabla de entregas para que los encabezados y celdas estén alineados y todo luzca parejo */
+    #tabla-entregas th, #tabla-entregas td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 10px 8px;
+      min-width: 110px;
+      box-sizing: border-box;
+    }
+    #tabla-entregas th {
+      background: var(--tab-bg);
+      color: var(--primary);
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+    }
+    #tabla-entregas td {
+      background: #f9fafd;
+      border-bottom: 1px solid #e0e7ef;
+    }
+    #tabla-entregas tr:nth-child(even) td {
+      background: #f4f8fb;
+    }
+    /* --- CORRECCIÓN FINAL: alineación perfecta de los botones de acción en tabla de entregas --- */
+    #tabla-entregas th.editar, #tabla-entregas th.eliminar,
+    #tabla-entregas td.editar, #tabla-entregas td.eliminar {
+      width: 110px;
+      min-width: 110px;
+      max-width: 110px;
+      padding: 0;
+    }
+    #tabla-entregas .btn-edit, #tabla-entregas .btn-delete {
+      width: 100%;
+      margin: 0;
+      display: block;
+      padding: 7px 0;
+      font-size: 0.98rem;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    #tabla-entregas .btn-edit { background: #f7971e; color: #fff; }
+    #tabla-entregas .btn-delete { background: var(--danger); color: #fff; }
+    @media (max-width: 900px) {
+      #tabla-entregas th.editar, #tabla-entregas th.eliminar,
+      #tabla-entregas td.editar, #tabla-entregas td.eliminar {
+        width: 70px;
+        min-width: 60px;
+        max-width: 80px;
+      }
+      #tabla-entregas .btn-edit, #tabla-entregas .btn-delete {
+        font-size: 0.93rem;
+        padding: 5px 0;
+      }
+    }
+    /* --- FIN OPTIMIZACIÓN --- */
+  </style>
+</head>
+<body>
+  <header>PLATAFORMA DE CONTROL Y SEGUIMIENTO DE CONTRATOS</header>
+  <main>
+    <div class="tabs" role="tablist">
+      <div class="tab active" data-tab="gestion-contratos">Gestión de Contratos</div>
+      <div class="tab" data-tab="programacion-entregas">Programación Entregas</div>
+      <div class="tab" data-tab="gestion-presupuestal">Gestión Presupuestal</div>
+      <div class="tab" data-tab="gestion-documentos">Documentos</div>
+      <div class="tab" data-tab="dashboard">Dashboard</div>
+    </div>
+
+    <!-- GESTIÓN DE CONTRATOS -->
+    <section class="active" id="gestion-contratos">
+      <div style="margin-bottom: 14px;">
+        <button type="button" class="btn-secondary" id="btn-importar-excel">Importar desde Excel</button>
+        <a id="descargar-plantilla" class="btn" style="background:#56CCF2;color:#0F2027;">Descargar Plantilla Excel</a>
+        <input type="file" id="input-excel" accept=".xlsx" style="display:none"/>
+      </div>
+      <form id="form-contrato">
+        <div class="flex-row">
+          <div class="flex-col">
+            <label>N° Contrato</label>
+            <input type="text" id="numero-contrato" maxlength="16" required />
+          </div>
+          <div class="flex-col">
+            <label>Contratista</label>
+            <input type="text" id="contratista" maxlength="40" required />
+          </div>
+          <div class="flex-col">
+            <label>Objeto</label>
+            <input type="text" id="objeto" maxlength="80" required />
+          </div>
+          <div class="flex-col">
+            <label>Monto (S/)</label>
+            <input type="number" id="monto" min="0" step="0.01" required />
+          </div>
+          <div class="flex-col">
+            <label>Fecha Inicio</label>
+            <input type="date" id="fecha-inicio" required />
+          </div>
+          <div class="flex-col">
+            <label>Fecha Fin</label>
+            <input type="date" id="fecha-fin" required />
+          </div>
+          <div class="flex-col">
+            <label>Tipo de Proceso</label>
+            <select id="tipo-proceso" required>
+              <option value="">-- Selecciona --</option>
+              <option value="Licitación Pública">Licitación Pública</option>
+              <option value="Concurso Público">Concurso Público</option>
+              <option value="Contratación Directa">Contratación Directa</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="flex-col">
+            <label>Adjuntar PDF Contrato</label>
+            <input type="file" id="pdf-contrato" accept="application/pdf" />
+          </div>
+        </div>
+        <button type="submit">Registrar Contrato</button>
+        <input type="hidden" id="editar-contrato-id" value="">
+      </form>
+
+      <h3>Contratos Registrados</h3>
+      <div class="table-wrap">
+        <table id="tabla-contratos">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Contratista</th>
+              <th>Objeto</th>
+              <th>Monto (S/)</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Tipo de Proceso</th>
+              <th>PDF</th>
+              <th>Editar</th>
+              <th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Contratos cargados aquí -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PROGRAMACIÓN DE ENTREGAS -->
+    <section id="programacion-entregas">
+      <div class="flex-row">
+        <div class="flex-col">
+          <label>Selecciona Contrato</label>
+          <select id="select-contrato-entrega"></select>
+        </div>
+        <div class="flex-col">
+          <label>Agregar Entrega Manual</label>
+          <form id="form-entrega">
+            <input type="text" id="desc-entrega" placeholder="Descripción de la entrega" maxlength="60" required />
+            <label>Fecha Máx. de Entrega</label>
+            <input type="date" id="fecha-entrega" required />
+            <label>Monto Mensual (S/)</label>
+            <input type="number" id="monto-entrega" min="0.01" step="0.01" required />
+            <button type="submit" class="btn-secondary">Agregar</button>
+          </form>
+        </div>
+        <div class="flex-col">
+          <label>Programar Entregas Automáticas</label>
+          <form id="form-entrega-masiva">
+            <label>N° de entregas por año</label>
+            <input type="number" id="num-entregas-ano" value="12" min="1" max="12" required />
+            <label>Periodo (años, máx 3)</label>
+            <input type="number" id="periodo-entregas" value="1" min="1" max="3" required />
+            <label>Fecha inicio 1ra entrega</label>
+            <input type="date" id="fecha-inicio-masiva" required />
+            <label>Monto mensual (S/)</label>
+            <input type="number" id="monto-masivo" min="0.01" step="0.01" required />
+            <button type="submit" class="btn-secondary">Programar</button>
+          </form>
+        </div>
+      </div>
+      <div id="alerta-50" class="alert alert-warning" style="display:none;"></div>
+      <div id="alerta-excede" class="alert alert-warning" style="display:none;"></div>
+      <h4>Progreso de Ejecución</h4>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="barra-progreso">0%</div>
+      </div>
+      <div>
+        <b>Total entregas programadas:</b> S/ <span id="total-programado">0.00</span>
+      </div>
+      <div class="table-wrap">
+        <table id="tabla-entregas">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Descripción</th>
+              <th>Fecha Máx.</th>
+              <th>Monto (S/)</th>
+              <th>Estado</th>
+              <th class="editar">Editar</th>
+              <th class="eliminar">Eliminar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Entregas -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GESTIÓN PRESUPUESTAL -->
+    <section id="gestion-presupuestal">
+      <label>Selecciona Contrato</label>
+      <select id="select-contrato-presupuesto"></select>
+      <div id="presupuesto-info" style="margin-top:18px;">
+        <!-- Info presupuesto aquí -->
+      </div>
+    </section>
+
+    <!-- GESTIÓN DE DOCUMENTOS -->
+    <section id="gestion-documentos">
+      <form id="form-documento">
+        <div class="flex-row">
+          <div class="flex-col">
+            <label>Selecciona Contrato</label>
+            <select id="select-contrato-doc"></select>
+          </div>
+          <div class="flex-col">
+            <label>Tipo de Documento</label>
+            <select id="tipo-doc" required>
+              <option value="">-- Selecciona --</option>
+              <option value="Adenda">Adenda</option>
+              <option value="Modificatoria">Modificatoria</option>
+              <option value="Plazo Adicional">Plazo Adicional</option>
+              <option value="Informe">Informe</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="flex-col">
+            <label>Adjuntar Documento (PDF)</label>
+            <input type="file" id="archivo-doc" accept="application/pdf" required/>
+          </div>
+        </div>
+        <div id="campos-extra-doc"></div>
+        <button type="submit">Registrar Documento</button>
+      </form>
+      <h3>Documentos Registrados</h3>
+      <div class="table-wrap">
+        <table id="tabla-documentos">
+          <thead>
+            <tr>
+              <th>Contrato</th>
+              <th>Tipo</th>
+              <th>Monto Adicional (S/)</th>
+              <th>Días Adicionales</th>
+              <th>Archivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Documentos -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <h2 style="text-align:center; color:var(--primary);">Dashboard General</h2>
+      <div class="flex-row" style="gap:38px; align-items: flex-start;">
+        <div class="flex-col" style="min-width:250px;">
+          <canvas id="chart-contratos" class="dashboard-chart"></canvas>
+          <div class="dashboard-analysis" id="analisis-contratos"></div>
+        </div>
+        <div class="flex-col" style="min-width:250px;">
+          <canvas id="chart-entregas" class="dashboard-chart"></canvas>
+          <div class="dashboard-analysis" id="analisis-entregas"></div>
+        </div>
+        <div class="flex-col" style="min-width:250px;">
+          <canvas id="chart-presupuesto" class="dashboard-chart"></canvas>
+          <div class="dashboard-analysis" id="analisis-presupuesto"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL PDF -->
+  <div class="pdf-modal" id="modal-pdf">
+    <div class="pdf-modal-content">
+      <div class="pdf-modal-header">
+        <span>Visualizador de PDF</span>
+        <button class="pdf-modal-close" id="cerrar-pdf">&times;</button>
+      </div>
+      <embed id="embed-pdf" type="application/pdf" src="">
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script>
+    // =========================
+    // VARIABLES GLOBALES
+    // =========================
+    let contratos = [];
+    let entregas = [];
+    let documentos = [];
+
+    // =========================
+    // UTILIDADES GENERALES
+    // =========================
+    function formatearFecha(fecha) {
+      if (!fecha) return '';
+      const d = new Date(fecha);
+      return d.toLocaleDateString('es-PE', {year:'numeric', month:'2-digit', day:'2-digit'});
+    }
+    function sumarDias(fecha, dias) {
+      let f = new Date(fecha);
+      f.setDate(f.getDate() + Number(dias));
+      return f.toISOString().split('T')[0];
+    }
+    function getContratoPorId(id) {
+      return contratos.find(c => c.id === id);
+    }
+
+    // =========================
+    // INICIALIZACIÓN GENERAL
+    // =========================
+    document.addEventListener('DOMContentLoaded', function() {
+      inicializarPlantillaExcel();
+      inicializarTabs();
+      inicializarEventosContratos();
+      inicializarEventosEntregas();
+      inicializarEventosDocumentos();
+      inicializarModalPDF();
+      inicializar();
+    });
+
+    // =========================
+    // PLANTILLA EXCEL
+    // =========================
+    function inicializarPlantillaExcel() {
+      // Archivo Excel válido, hoja 'Contratos' con columnas ejemplo
+      const plantillaBase64 =
+        "UEsDBBQABgAIAAAAIQAAAAAAAAAAAAAAAAAJAAAAVGV4dC90ZXh0VVQJAAP8v6Zg/L+mYHV4CwABBOgDAAAE6AMAAE4uIENvbnRyYXRvCkNvbnRyYXRpc3RhCk9iamV0bwpNb250byAoUy8pCkZlY2hhIEluaWNpbwpGZWNoYSBGaW4KVGlwbyBkZSBQcm9jZXNvClBLAQIUABQACAAAACEAAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAAAVGV4dC90ZXh0VVQFAAP8v6ZgdXgLAAEE6AMAAAToAwAAUEsFBgAAAAABAAEAPwAAAEwAAAAAAA==";
+      document.getElementById('descargar-plantilla').onclick = function(){
+        const byteCharacters = atob(plantillaBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for(let i=0;i<byteCharacters.length;i++) byteNumbers[i]=byteCharacters.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "plantilla_contratos.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);}, 1000);
+      };
+    }
+
+    // =========================
+    // TABS
+    // =========================
+    function inicializarTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+          document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+          this.classList.add('active');
+          document.getElementById(this.dataset.tab).classList.add('active');
+          if(this.dataset.tab==='dashboard') actualizarDashboard();
+          if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+        });
+      });
+    }
+
+    // =========================
+    // CONTRATOS
+    // =========================
+    function inicializarEventosContratos() {
+      document.getElementById('form-contrato').addEventListener('submit', guardarContrato);
+      document.getElementById('btn-importar-excel').onclick = () => document.getElementById('input-excel').click();
+      document.getElementById('input-excel').addEventListener('change', importarContratosDesdeExcel);
+    }
+    function guardarContrato(e) {
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = pdfFile ? URL.createObjectURL(pdfFile) : '';
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        Object.assign(c, {numero, contratista, objeto, tipoProc, montoBase: monto, inicio, finBase: fin});
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        e.target.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({id, numero, contratista, objeto, tipoProc, montoBase: monto, inicio, finBase: fin, pdfURL});
+        e.target.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    }
+    function importarContratosDesdeExcel(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // =========================
+    // ENTREGAS
+    // =========================
+    function inicializarEventosEntregas() {
+      document.getElementById('form-entrega').addEventListener('submit', agregarEntregaManual);
+      document.getElementById('form-entrega-masiva').addEventListener('submit', agregarEntregasMasivas);
+      document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+    }
+    function agregarEntregaManual(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({contratoId, desc, fecha, monto, estado: 'Pendiente'});
+      e.target.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    }
+    function agregarEntregasMasivas(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      e.target.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    }
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // ==== PROGRAMACIÓN DE ENTREGAS ====
+    function actualizarSeleccionContratoEntrega() {
+      let sel = document.getElementById('select-contrato-entrega');
+      let idSel = sel.value;
+      sel.innerHTML = '';
+      contratos.forEach(c=>{
+        let opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = `${c.numero} - ${c.contratista}`;
+        sel.appendChild(opt);
+      });
+      if(idSel) sel.value = idSel;
+      if(!sel.value && contratos.length) sel.value = contratos[0].id;
+      actualizarTablaEntregas();
+    }
+    document.getElementById('select-contrato-entrega').onchange = actualizarTablaEntregas;
+
+    function totalProgramadoContrato(contratoId) {
+      return entregas
+        .filter(e=>e.contratoId===contratoId)
+        .reduce((sum,e)=>sum+parseFloat(e.monto||0),0);
+    }
+    function calcularPresupuestoTotal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return 0;
+      let suma = c.montoBase||0;
+      documentos.filter(d=>d.contratoId===contratoId && d.presupuesto)
+        .forEach(d=>{ if(!isNaN(d.presupuesto)) suma+=parseFloat(d.presupuesto); });
+      return suma;
+    }
+    function calcularDiasAdicionales(contratoId) {
+      return documentos.filter(d=>d.contratoId===contratoId && d.diasAdicionales)
+        .reduce((sum,d)=>sum+parseInt(d.diasAdicionales||0),0);
+    }
+    function calcularPlazoFinal(contratoId) {
+      let c = contratos.find(c=>c.id===contratoId);
+      if(!c) return "";
+      let diasAdicionales = calcularDiasAdicionales(contratoId);
+      return sumarDias(c.finBase, diasAdicionales);
+    }
+    function presupuestoContrato(contratoId) { return calcularPresupuestoTotal(contratoId); }
+
+    // --- Agregar Entrega Manual ---
+    document.getElementById('form-entrega').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let desc = document.getElementById('desc-entrega').value;
+      let fecha = document.getElementById('fecha-entrega').value;
+      let monto = parseFloat(document.getElementById('monto-entrega').value);
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + monto > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, monto);
+        return;
+      }
+      entregas.push({
+        contratoId,
+        desc,
+        fecha,
+        monto,
+        estado: 'Pendiente'
+      });
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    document.getElementById('form-entrega-masiva').addEventListener('submit',function(e){
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-entrega').value;
+      if(!contratoId) return;
+      let nEntregas = parseInt(document.getElementById('num-entregas-ano').value);
+      let periodo = parseInt(document.getElementById('periodo-entregas').value);
+      let fechaInicio = document.getElementById('fecha-inicio-masiva').value;
+      let monto = parseFloat(document.getElementById('monto-masivo').value);
+
+      if(nEntregas < 1 || nEntregas > 12 || periodo < 1 || periodo > 3) return;
+      let fecha = new Date(fechaInicio);
+      let totalAAgregar = nEntregas * periodo * monto;
+      let totalAntes = totalProgramadoContrato(contratoId);
+      let presupuesto = presupuestoContrato(contratoId);
+      if(totalAntes + totalAAgregar > presupuesto) {
+        mostrarAlertaExcede(true, presupuesto, totalAntes, totalAAgregar);
+        return;
+      }
+      for(let y=0; y<periodo; y++) {
+        for(let m=0; m<nEntregas; m++) {
+          let fechaEntrega = new Date(fecha);
+          fechaEntrega.setMonth(fecha.getMonth() + (y * nEntregas) + m);
+          entregas.push({
+            contratoId,
+            desc: `Entrega ${m+1 + y*nEntregas}/${nEntregas*periodo}`,
+            fecha: fechaEntrega.toISOString().split('T')[0],
+            monto: monto,
+            estado: 'Pendiente'
+          });
+        }
+      }
+      this.reset();
+      mostrarAlertaExcede(false);
+      actualizarTablaEntregas();
+    });
+
+    // =========================
+    // DOCUMENTOS
+    // =========================
+    function inicializarEventosDocumentos() {
+      document.getElementById('tipo-doc').onchange = mostrarCamposExtraDocumento;
+      document.getElementById('form-documento').addEventListener('submit', guardarDocumento);
+    }
+    function mostrarCamposExtraDocumento() {
+      let tipo = this.value;
+      let extra = document.getElementById('campos-extra-doc');
+      extra.innerHTML = '';
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        extra.innerHTML = `
+        <label>Monto adicional (S/)</label>
+        <input type="number" id="presupuesto-doc" min="0" step="0.01">
+        <label>Días adicionales</label>
+        <input type="number" id="dias-doc" min="0" max="600">
+        `;
+      }
+    }
+    function guardarDocumento(e) {
+      e.preventDefault();
+      let contratoId = document.getElementById('select-contrato-doc').value;
+      let tipo = document.getElementById('tipo-doc').value;
+      let archivo = document.getElementById('archivo-doc').files[0];
+      let archivoURL = archivo ? URL.createObjectURL(archivo) : '';
+      let presupuesto = null, diasAdicionales=null;
+      if(['Modificatoria','Adenda','Plazo Adicional'].includes(tipo)) {
+        presupuesto = parseFloat(document.getElementById('presupuesto-doc').value)||0;
+        diasAdicionales = parseInt(document.getElementById('dias-doc').value)||0;
+      }
+      documentos.push({ contratoId, tipo, archivoURL, presupuesto, diasAdicionales });
+      e.target.reset();
+      document.getElementById('campos-extra-doc').innerHTML = '';
+      actualizarDocumentos();
+      actualizarVinculos();
+    }
+
+    // =========================
+    // MODAL PDF
+    // =========================
+    function inicializarModalPDF() {
+      document.getElementById('cerrar-pdf').onclick = function() {
+        document.getElementById('modal-pdf').classList.remove('active');
+        document.getElementById('embed-pdf').src = '';
+      };
+    }
+
+    // =========================
+    // ACTUALIZACIONES Y DASHBOARD
+    // =========================
+    function actualizarVinculos() {
+      actualizarSeleccionContratos();
+      actualizarPresupuestal();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDashboard();
+    }
+    function inicializar() {
+      actualizarContratos();
+      actualizarSeleccionContratos();
+      actualizarSeleccionContratoEntrega();
+      actualizarSeleccionContratoDocumento();
+      actualizarDocumentos();
+      actualizarDashboard();
+    }
+    // ==== TABS ====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='dashboard') actualizarDashboard();
+        if(this.dataset.tab==='gestion-presupuestal') actualizarPresupuestal();
+      });
+    });
+
+    // ==== CONTRATOS ====
+    document.getElementById('form-contrato').addEventListener('submit', function(e){
+      e.preventDefault();
+      let idEdit = document.getElementById('editar-contrato-id').value;
+      let numero = document.getElementById('numero-contrato').value;
+      let contratista = document.getElementById('contratista').value;
+      let objeto = document.getElementById('objeto').value;
+      let tipoProc = document.getElementById('tipo-proceso').value;
+      let monto = parseFloat(document.getElementById('monto').value);
+      let inicio = document.getElementById('fecha-inicio').value;
+      let fin = document.getElementById('fecha-fin').value;
+      let pdfFile = document.getElementById('pdf-contrato').files[0];
+      let pdfURL = '';
+      if(pdfFile) pdfURL = URL.createObjectURL(pdfFile);
+
+      if(idEdit) {
+        let c = getContratoPorId(idEdit);
+        c.numero = numero;
+        c.contratista = contratista;
+        c.objeto = objeto;
+        c.tipoProc = tipoProc;
+        c.montoBase = monto;
+        c.inicio = inicio;
+        c.finBase = fin;
+        if(pdfURL) c.pdfURL = pdfURL;
+        document.getElementById('editar-contrato-id').value = "";
+        this.reset();
+      } else {
+        let id = 'C' + (Date.now());
+        contratos.push({
+          id,
+          numero,
+          contratista,
+          objeto,
+          tipoProc,
+          montoBase: monto,
+          inicio,
+          finBase: fin,
+          pdfURL,
+        });
+        this.reset();
+      }
+      actualizarContratos();
+      actualizarVinculos();
+    });
+
+    function actualizarContratos() {
+      let tb = document.getElementById('tabla-contratos').getElementsByTagName('tbody')[0];
+      tb.innerHTML = '';
+      contratos.forEach((c,ix) => {
+        let presupuesto = calcularPresupuestoTotal(c.id);
+        let plazoFinal = calcularPlazoFinal(c.id);
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.numero}</td>
+          <td>${c.contratista}</td>
+          <td>${c.objeto}</td>
+          <td>S/ ${presupuesto.toFixed(2)}</td>
+          <td>${formatearFecha(c.inicio)}</td>
+          <td>${formatearFecha(plazoFinal)}</td>
+          <td>${c.tipoProc||'-'}</td>
+          <td>${c.pdfURL?`<button class="btn-secondary btn-pdf" data-pdf="${c.pdfURL}">Ver PDF</button>`:'-'}</td>
+          <td><button class="btn-edit" data-id="${c.id}">Editar</button></td>
+          <td><button class="btn-delete" data-id="${c.id}">Eliminar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      document.querySelectorAll('.btn-pdf').forEach(btn=>{
+        btn.onclick = function() {
+          let url = this.getAttribute('data-pdf');
+          document.getElementById('embed-pdf').src = url;
+          document.getElementById('modal-pdf').classList.add('active');
+        }
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          if(confirm("¿Eliminar contrato y todos sus datos asociados?")) {
+            contratos = contratos.filter(c=>c.id!==id);
+            entregas = entregas.filter(e=>e.contratoId!==id);
+            documentos = documentos.filter(d=>d.contratoId!==id);
+            actualizarContratos();
+            actualizarVinculos();
+          }
+        }
+      });
+      document.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.onclick = function(){
+          let id = this.getAttribute('data-id');
+          let c = getContratoPorId(id);
+          document.getElementById('numero-contrato').value = c.numero;
+          document.getElementById('contratista').value = c.contratista;
+          document.getElementById('objeto').value = c.objeto;
+          document.getElementById('monto').value = c.montoBase;
+          document.getElementById('fecha-inicio').value = c.inicio;
+          document.getElementById('fecha-fin').value = c.finBase;
+          document.getElementById('tipo-proceso').value = c.tipoProc||"";
+          document.getElementById('editar-contrato-id').value = id;
+          window.scrollTo({top:0,behavior:"smooth"});
+        }
+      });
+    }
+    document.getElementById('cerrar-pdf').onclick = function() {
+      document.getElementById('modal-pdf').classList.remove('active');
+      document.getElementById('embed-pdf').src = '';
+    };
+
+    // ==== Importar desde Excel ====
+    document.getElementById('btn-importar-excel').onclick = () => {
+      document.getElementById('input-excel').click();
+    };
+    document.getElementById('input-excel').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+        for(let i=1;i<rows.length;i++) {
+          const r = rows[i];
+          if(!r[0]||!r[1]||!r[2]) continue;
+          let c = contratos.find(c=>c.numero===r[0]);
+          if(!c) {
+            contratos.push({
+              id: 'C'+(Date.now()+i),
+              numero: r[0],
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||"",
+              pdfURL: "",
+            });
+          } else {
+            Object.assign(c, {
+              contratista: r[1],
+              objeto: r[2],
+              montoBase: parseFloat(r[3])||0,
+              inicio: r[4],
+              finBase: r[5],
+              tipoProc: r[6]||""
+            });
+          }
+        }
+        actualizarContratos();
+        actualizarVinculos();
+        alert("¡Contratos importados correctamente!");
+        document.getElementById('input-excel').value = "";
+      };
+     
